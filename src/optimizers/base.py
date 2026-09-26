@@ -1,8 +1,3 @@
-"""
-Base classes and result containers for neural network optimizers.
-Supports unconstrained optimization of general functions as well as neural network training.
-"""
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -12,10 +7,6 @@ import time
 
 @dataclass
 class OptimizerResult:
-    """
-    Standardized container for optimization and training results.
-    Tracks trajectory, evaluation counts, wall-clock time, and convergence status.
-    """
     best_weights: np.ndarray
     best_loss: float
     final_weights: np.ndarray
@@ -33,11 +24,6 @@ class OptimizerResult:
 
 
 class BaseOptimizer(ABC):
-    """
-    Abstract base class for all optimizers.
-    Provides common validation, timing, logging, and evaluation wrappers.
-    """
-
     def __init__(self, name: str, max_iters: int = 1000, tol: float = 1e-6, verbose: bool = False):
         self.name = name
         self.max_iters = max_iters
@@ -53,27 +39,6 @@ class BaseOptimizer(ABC):
         val_cost_fn: Optional[Callable[[np.ndarray], float]] = None,
         callback: Optional[Callable[[int, np.ndarray, float], None]] = None,
     ) -> OptimizerResult:
-        """
-        Optimize parameter vector w minimizing cost_fn.
-
-        Parameters
-        ----------
-        cost_fn : Callable[[np.ndarray], float]
-            Scalar loss function E(w).
-        grad_fn : Callable[[np.ndarray], np.ndarray]
-            Gradient function E'(w) returning vector of same shape as w.
-        w0 : np.ndarray
-            Initial parameter vector (1D float array).
-        val_cost_fn : Optional[Callable[[np.ndarray], float]]
-            Optional validation loss function for monitoring generalization.
-        callback : Optional[Callable[[int, np.ndarray, float], None]]
-            Optional callback invoked per iteration: callback(iter, w, loss).
-
-        Returns
-        -------
-        OptimizerResult
-            Full result record including loss trajectory, evaluation counts, and timing.
-        """
         pass
 
     def train_network(
@@ -85,34 +50,6 @@ class BaseOptimizer(ABC):
         y_val: Optional[np.ndarray] = None,
         callback: Optional[Callable[[int, np.ndarray, float], None]] = None,
     ) -> OptimizerResult:
-        """
-        Train a neural network model using full-batch or mini-batch training.
-        The network must implement:
-            - get_parameters() -> np.ndarray
-            - set_parameters(w: np.ndarray) -> None
-            - compute_loss_and_grad(X, y) -> Tuple[float, np.ndarray]
-            - compute_loss(X, y) -> float
-
-        Parameters
-        ----------
-        network : Any
-            Neural network instance.
-        X_train : np.ndarray
-            Training input features.
-        y_train : np.ndarray
-            Training targets.
-        X_val : Optional[np.ndarray]
-            Validation input features.
-        y_val : Optional[np.ndarray]
-            Validation targets.
-        callback : Optional[Callable[[int, np.ndarray, float], None]]
-            Optional per-epoch/iteration callback.
-
-        Returns
-        -------
-        OptimizerResult
-            Training history and optimized parameters.
-        """
         w0 = network.get_parameters()
 
         def cost_fn(w: np.ndarray) -> float:

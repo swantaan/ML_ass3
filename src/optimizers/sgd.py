@@ -1,8 +1,3 @@
-"""
-Stochastic Gradient Descent (SGD) optimizer with momentum, weight decay,
-learning rate scheduling, and mini-batch support.
-"""
-
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import numpy as np
 import time
@@ -11,15 +6,6 @@ from src.optimizers.base import BaseOptimizer, OptimizerResult
 
 
 class SGDOptimizer(BaseOptimizer):
-    """
-    Stochastic Gradient Descent optimizer supporting:
-    - Standard gradient descent and mini-batch SGD
-    - Polyak / classical momentum and Nesterov accelerated momentum
-    - Learning rate decay
-    - L2 weight decay regularization
-    - Early stopping / tolerance checks
-    """
-
     def __init__(
         self,
         lr: float = 0.01,
@@ -33,30 +19,6 @@ class SGDOptimizer(BaseOptimizer):
         patience: int = 50,
         verbose: bool = False,
     ):
-        """
-        Parameters
-        ----------
-        lr : float
-            Initial learning rate (step size eta > 0).
-        momentum : float
-            Momentum coefficient beta in [0, 1). Set to 0.0 for vanilla SGD.
-        nesterov : bool
-            Whether to use Nesterov accelerated gradient momentum.
-        weight_decay : float
-            L2 regularization coefficient lambda >= 0.
-        lr_decay : float
-            Learning rate decay factor per iteration: lr_k = lr / (1 + lr_decay * k).
-        batch_size : Optional[int]
-            Mini-batch size. None indicates full-batch gradient descent.
-        max_iters : int
-            Maximum number of iterations / epochs.
-        tol : float
-            Tolerance for gradient norm or loss improvement for early convergence.
-        patience : int
-            Number of iterations without improvement before early stopping.
-        verbose : bool
-            Whether to log progress during optimization.
-        """
         super().__init__(name="SGD", max_iters=max_iters, tol=tol, verbose=verbose)
         self.lr = lr
         self.momentum = momentum
@@ -74,9 +36,6 @@ class SGDOptimizer(BaseOptimizer):
         val_cost_fn: Optional[Callable[[np.ndarray], float]] = None,
         callback: Optional[Callable[[int, np.ndarray, float], None]] = None,
     ) -> OptimizerResult:
-        """
-        Full-batch Gradient Descent with momentum and weight decay.
-        """
         start_time = time.perf_counter()
         w = np.copy(w0).astype(float)
         velocity = np.zeros_like(w)
@@ -191,13 +150,9 @@ class SGDOptimizer(BaseOptimizer):
         y_val: Optional[np.ndarray] = None,
         callback: Optional[Callable[[int, np.ndarray, float], None]] = None,
     ) -> OptimizerResult:
-        """
-        Train neural network with mini-batch SGD or full-batch GD.
-        """
         if self.batch_size is None or self.batch_size >= len(X_train):
             return super().train_network(network, X_train, y_train, X_val, y_val, callback)
 
-        # Mini-batch training loop
         start_time = time.perf_counter()
         w = np.copy(network.get_parameters()).astype(float)
         velocity = np.zeros_like(w)
