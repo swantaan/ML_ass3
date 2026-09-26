@@ -16,7 +16,7 @@ class SGDOptimizer(BaseOptimizer):
         batch_size: Optional[int] = None,
         max_iters: int = 1000,
         tol: float = 1e-6,
-        patience: int = 50,
+        patience: int = 0,
         verbose: bool = False,
     ):
         super().__init__(name="SGD", max_iters=max_iters, tol=tol, verbose=verbose)

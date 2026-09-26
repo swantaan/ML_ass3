@@ -1,0 +1,152 @@
+{
+  "classification_1": {
+    "SGD": {
+      "best_params": {
+        "lr": 0.1,
+        "momentum": 0.9,
+        "batch_size": 32
+      },
+      "best_val_loss": 0.016740078788500565
+    },
+    "SCG": {
+      "best_params": {
+        "sigma": 0.001,
+        "lambda_init": 1e-05
+      },
+      "best_val_loss": 0.01305872867026639
+    },
+    "LeapFrog": {
+      "best_params": {
+        "dt_init": 0.05,
+        "delta": 5.0,
+        "version": "LFOP1b"
+      },
+      "best_val_loss": 0.01284039647504469
+    }
+  },
+  "classification_2": {
+    "SGD": {
+      "best_params": {
+        "lr": 0.1,
+        "momentum": 0.9,
+        "batch_size": 32
+      },
+      "best_val_loss": 0.027068823173327605
+    },
+    "SCG": {
+      "best_params": {
+        "sigma": 0.001,
+        "lambda_init": 1e-05
+      },
+      "best_val_loss": 0.01679880708522726
+    },
+    "LeapFrog": {
+      "best_params": {
+        "dt_init": 0.5,
+        "delta": 5.0,
+        "version": "LFOP1b"
+      },
+      "best_val_loss": 0.02627388501775964
+    }
+  },
+  "classification_3": {
+    "SGD": {
+      "best_params": {
+        "lr": 0.05,
+        "momentum": 0.8,
+        "batch_size": 32
+      },
+      "best_val_loss": 0.01006396113461341
+    },
+    "SCG": {
+      "best_params": {
+        "sigma": 1e-05,
+        "lambda_init": 1e-06
+      },
+      "best_val_loss": 0.021068128212552693
+    },
+    "LeapFrog": {
+      "best_params": {
+        "dt_init": 0.5,
+        "delta": 1.0,
+        "version": "LFOP1"
+      },
+      "best_val_loss": 0.01299735146927535
+    }
+  },
+  "regression_1": {
+    "SGD": {
+      "best_params": {
+        "lr": 0.1,
+        "momentum": 0.9,
+        "batch_size": 32
+      },
+      "best_val_loss": 0.0170855123582463
+    },
+    "SCG": {
+      "best_params": {
+        "sigma": 0.0001,
+        "lambda_init": 1e-05
+      },
+      "best_val_loss": 0.011367063676848138
+    },
+    "LeapFrog": {
+      "best_params": {
+        "dt_init": 0.5,
+        "delta": 0.5,
+        "version": "LFOP1b"
+      },
+      "best_val_loss": 0.01721695627541554
+    }
+  },
+  "regression_2": {
+    "SGD": {
+      "best_params": {
+        "lr": 0.1,
+        "momentum": 0.9,
+        "batch_size": 32
+      },
+      "best_val_loss": 0.00929686859184579
+    },
+    "SCG": {
+      "best_params": {
+        "sigma": 0.0001,
+        "lambda_init": 1e-06
+      },
+      "best_val_loss": 0.004434503732685385
+    },
+    "LeapFrog": {
+      "best_params": {
+        "dt_init": 0.5,
+        "delta": 1.0,
+        "version": "LFOP1b"
+      },
+      "best_val_loss": 0.027014763666374685
+    }
+  },
+  "regression_3": {
+    "SGD": {
+      "best_params": {
+        "lr": 0.01,
+        "momentum": 0.8,
+        "batch_size": 32
+      },
+      "best_val_loss": 0.2496427115355364
+    },
+    "SCG": {
+      "best_params": {
+        "sigma": 0.0001,
+        "lambda_init": 1e-07
+      },
+      "best_val_loss": 0.27007844196259034
+    },
+    "LeapFrog": {
+      "best_params": {
+        "dt_init": 0.1,
+        "delta": 0.5,
+        "version": "LFOP1"
+      },
+      "best_val_loss": 0.2575110276141875
+    }
+  }
+}

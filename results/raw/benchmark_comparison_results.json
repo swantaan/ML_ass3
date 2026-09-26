@@ -1,0 +1,860 @@
+{
+  "classification_1": {
+    "dataset_name": "Wine Recognition",
+    "type": "multiclass_classification",
+    "hidden_units": 2,
+    "summary": {
+      "SGD": {
+        "test_metric": {
+          "mean": 0.030653298709027117,
+          "std": 0.02686768832566557,
+          "median": 0.022489610088247798,
+          "min": 0.002799965553758845,
+          "max": 0.0964067483098008
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 2000.0,
+          "std": 0.0,
+          "median": 2000.0,
+          "min": 2000.0,
+          "max": 2000.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.16262694343334563,
+          "std": 0.002112521045620068,
+          "median": 0.16206160700039618,
+          "min": 0.16097494899986486,
+          "max": 0.17286148599941953
+        },
+        "convergence_rate": 0.0
+      },
+      "SCG": {
+        "test_metric": {
+          "mean": 0.03382929918480659,
+          "std": 0.03896879672961351,
+          "median": 0.025945762261205527,
+          "min": 1.631167117886954e-05,
+          "max": 0.16941244638766317
+        },
+        "func_evals": {
+          "mean": 437.1,
+          "std": 86.88492190922666,
+          "median": 471.0,
+          "min": 201.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 872.6,
+          "std": 173.68095998718155,
+          "median": 941.0,
+          "min": 399.0,
+          "max": 1001.0
+        },
+        "iterations": {
+          "mean": 435.8,
+          "std": 86.84047999359078,
+          "median": 470.0,
+          "min": 199.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.09689269926672447,
+          "std": 0.0191844892595294,
+          "median": 0.1053340154999205,
+          "min": 0.044507339999654505,
+          "max": 0.11194672199962952
+        },
+        "convergence_rate": 0.5333333333333333
+      },
+      "LeapFrog": {
+        "test_metric": {
+          "mean": 0.028837986577035322,
+          "std": 0.02533965144738924,
+          "median": 0.027990984782353248,
+          "min": 0.00017977024533394014,
+          "max": 0.09202172995152871
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.07559320633342091,
+          "std": 0.0004766368823790264,
+          "median": 0.07552919450017725,
+          "min": 0.07473702900006174,
+          "max": 0.07713195900032588
+        },
+        "convergence_rate": 0.0
+      }
+    },
+    "statistical_tests": {
+      "friedman_test_metric": {
+        "statistic": 1.8666666666666742,
+        "p_value": 0.3932407208685967,
+        "significant": false
+      },
+      "wilcoxon_SGD_vs_SCG": {
+        "statistic": 231.0,
+        "p_value": 0.9838335812091827,
+        "significant": false
+      },
+      "wilcoxon_SGD_vs_LeapFrog": {
+        "statistic": 178.0,
+        "p_value": 0.2710056286305189,
+        "significant": false
+      },
+      "wilcoxon_SCG_vs_LeapFrog": {
+        "statistic": 208.0,
+        "p_value": 0.6263462882488966,
+        "significant": false
+      }
+    }
+  },
+  "classification_2": {
+    "dataset_name": "Two Moons",
+    "type": "binary_classification",
+    "hidden_units": 12,
+    "summary": {
+      "SGD": {
+        "test_metric": {
+          "mean": 0.04382699080391434,
+          "std": 0.008438476615948695,
+          "median": 0.04277787677370845,
+          "min": 0.029605714208883232,
+          "max": 0.0598477647646441
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 5500.0,
+          "std": 0.0,
+          "median": 5500.0,
+          "min": 5500.0,
+          "max": 5500.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.4546793604999948,
+          "std": 0.0015772142834044507,
+          "median": 0.45449114749999353,
+          "min": 0.4513219509999544,
+          "max": 0.4572136259994295
+        },
+        "convergence_rate": 0.0
+      },
+      "SCG": {
+        "test_metric": {
+          "mean": 0.027157200335048582,
+          "std": 0.008000790867190547,
+          "median": 0.02719689449727182,
+          "min": 0.011460724619382263,
+          "max": 0.04559701998192167
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 995.8666666666667,
+          "std": 3.0931886609054455,
+          "median": 996.0,
+          "min": 989.0,
+          "max": 1001.0
+        },
+        "iterations": {
+          "mean": 497.43333333333334,
+          "std": 1.5465943304527228,
+          "median": 497.5,
+          "min": 494.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.20247305073332125,
+          "std": 0.00125205482176464,
+          "median": 0.202390454000124,
+          "min": 0.1994231779999609,
+          "max": 0.20559994999985065
+        },
+        "convergence_rate": 0.0
+      },
+      "LeapFrog": {
+        "test_metric": {
+          "mean": 0.04042632654694965,
+          "std": 0.01200413018737945,
+          "median": 0.03871447722064797,
+          "min": 0.01818052187557311,
+          "max": 0.07987956952570371
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.13418836183330615,
+          "std": 0.0007455060191350574,
+          "median": 0.13437789250019705,
+          "min": 0.13238472000011825,
+          "max": 0.13573293199988257
+        },
+        "convergence_rate": 0.0
+      }
+    },
+    "statistical_tests": {
+      "friedman_test_metric": {
+        "statistic": 44.06666666666666,
+        "p_value": 2.6980184512036645e-10,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_SCG": {
+        "statistic": 0.0,
+        "p_value": 1.862645149230957e-09,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_LeapFrog": {
+        "statistic": 126.0,
+        "p_value": 0.027741437777876854,
+        "significant": true
+      },
+      "wilcoxon_SCG_vs_LeapFrog": {
+        "statistic": 4.0,
+        "p_value": 1.30385160446167e-08,
+        "significant": true
+      }
+    }
+  },
+  "classification_3": {
+    "dataset_name": "Breast Cancer Wisconsin",
+    "type": "binary_classification",
+    "hidden_units": 2,
+    "summary": {
+      "SGD": {
+        "test_metric": {
+          "mean": 0.022362264030335276,
+          "std": 0.012554095343283079,
+          "median": 0.02103436950042813,
+          "min": 0.0014211928613566723,
+          "max": 0.04682223034091498
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 6500.0,
+          "std": 0.0,
+          "median": 6500.0,
+          "min": 6500.0,
+          "max": 6500.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.4894524381333819,
+          "std": 0.0010887800241398727,
+          "median": 0.489695625999957,
+          "min": 0.48731440499977907,
+          "max": 0.4912813939999978
+        },
+        "convergence_rate": 0.0
+      },
+      "SCG": {
+        "test_metric": {
+          "mean": 0.051123812447667775,
+          "std": 0.03961137568418985,
+          "median": 0.03643406996412315,
+          "min": 0.0006420890257110605,
+          "max": 0.1561737400923542
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 999.6666666666666,
+          "std": 2.186689094362136,
+          "median": 1001.0,
+          "min": 993.0,
+          "max": 1001.0
+        },
+        "iterations": {
+          "mean": 499.3333333333333,
+          "std": 1.093344547181068,
+          "median": 500.0,
+          "min": 496.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.17145865716665867,
+          "std": 0.0006276924101707192,
+          "median": 0.1716076359998624,
+          "min": 0.17017661800036876,
+          "max": 0.17299922100028198
+        },
+        "convergence_rate": 0.0
+      },
+      "LeapFrog": {
+        "test_metric": {
+          "mean": 0.03160702647119136,
+          "std": 0.019707348209335552,
+          "median": 0.031188058891460726,
+          "min": 0.00032654985149528675,
+          "max": 0.10935529490557738
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.11025311990000167,
+          "std": 0.0004484255017033064,
+          "median": 0.11020734400017318,
+          "min": 0.10928419399988343,
+          "max": 0.1112417459999051
+        },
+        "convergence_rate": 0.0
+      }
+    },
+    "statistical_tests": {
+      "friedman_test_metric": {
+        "statistic": 18.46666666666664,
+        "p_value": 9.772693623990919e-05,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_SCG": {
+        "statistic": 29.0,
+        "p_value": 3.2391399145126343e-06,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_LeapFrog": {
+        "statistic": 50.0,
+        "p_value": 5.5925920605659485e-05,
+        "significant": true
+      },
+      "wilcoxon_SCG_vs_LeapFrog": {
+        "statistic": 103.0,
+        "p_value": 0.006639536470174789,
+        "significant": true
+      }
+    }
+  },
+  "regression_1": {
+    "dataset_name": "Damped Sinc Function",
+    "type": "univariate_regression",
+    "hidden_units": 8,
+    "summary": {
+      "SGD": {
+        "test_metric": {
+          "mean": 0.02991533849465756,
+          "std": 0.005997672503759114,
+          "median": 0.030022494017349417,
+          "min": 0.018917234316009404,
+          "max": 0.04324842830633937
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 5500.0,
+          "std": 0.0,
+          "median": 5500.0,
+          "min": 5500.0,
+          "max": 5500.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.4143917162666488,
+          "std": 0.0019454276971333914,
+          "median": 0.4142645215001721,
+          "min": 0.4092348049998691,
+          "max": 0.4173753499999293
+        },
+        "convergence_rate": 0.0
+      },
+      "SCG": {
+        "test_metric": {
+          "mean": 0.020111870834672408,
+          "std": 0.003898206440076539,
+          "median": 0.01948696054984577,
+          "min": 0.014198083374129776,
+          "max": 0.03037988840670346
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 993.6,
+          "std": 2.6858505363195984,
+          "median": 993.0,
+          "min": 989.0,
+          "max": 999.0
+        },
+        "iterations": {
+          "mean": 496.3,
+          "std": 1.3429252681597992,
+          "median": 496.0,
+          "min": 494.0,
+          "max": 499.0
+        },
+        "wall_time": {
+          "mean": 0.16747514296660787,
+          "std": 0.0007888092860806422,
+          "median": 0.1674747854999623,
+          "min": 0.16581078999934107,
+          "max": 0.16909897000005003
+        },
+        "convergence_rate": 0.0
+      },
+      "LeapFrog": {
+        "test_metric": {
+          "mean": 0.026140244648385894,
+          "std": 0.004417863072949999,
+          "median": 0.026542655477289293,
+          "min": 0.017369022464192797,
+          "max": 0.03317736180941068
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.11266294593333441,
+          "std": 0.0006293695993024452,
+          "median": 0.11282246549990305,
+          "min": 0.11079470699951344,
+          "max": 0.11411244800001441
+        },
+        "convergence_rate": 0.0
+      }
+    },
+    "statistical_tests": {
+      "friedman_test_metric": {
+        "statistic": 47.26666666666665,
+        "p_value": 5.4472053078335635e-11,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_SCG": {
+        "statistic": 1.0,
+        "p_value": 3.725290298461914e-09,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_LeapFrog": {
+        "statistic": 33.0,
+        "p_value": 5.973502993583679e-06,
+        "significant": true
+      },
+      "wilcoxon_SCG_vs_LeapFrog": {
+        "statistic": 1.0,
+        "p_value": 3.725290298461914e-09,
+        "significant": true
+      }
+    }
+  },
+  "regression_2": {
+    "dataset_name": "Friedman 1 Non-Linear Benchmark",
+    "type": "multivariate_regression",
+    "hidden_units": 16,
+    "summary": {
+      "SGD": {
+        "test_metric": {
+          "mean": 0.009053244811025792,
+          "std": 0.0028401244273421797,
+          "median": 0.008586392359026663,
+          "min": 0.004924511018990508,
+          "max": 0.01542321107259584
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 7000.0,
+          "std": 0.0,
+          "median": 7000.0,
+          "min": 7000.0,
+          "max": 7000.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.6016883109667106,
+          "std": 0.00586985945678904,
+          "median": 0.6002286184998411,
+          "min": 0.5956082570000945,
+          "max": 0.621414924000419
+        },
+        "convergence_rate": 0.0
+      },
+      "SCG": {
+        "test_metric": {
+          "mean": 0.0034111127897661947,
+          "std": 0.0011886377888207646,
+          "median": 0.003087244824834171,
+          "min": 0.0017238187248106603,
+          "max": 0.006463573872955457
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 1000.4666666666667,
+          "std": 0.8995528902176071,
+          "median": 1001.0,
+          "min": 999.0,
+          "max": 1001.0
+        },
+        "iterations": {
+          "mean": 499.73333333333335,
+          "std": 0.44977644510880355,
+          "median": 500.0,
+          "min": 499.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.27287515193332484,
+          "std": 0.0034938344592333756,
+          "median": 0.2724965500001417,
+          "min": 0.2671218609993957,
+          "max": 0.28301999300038005
+        },
+        "convergence_rate": 0.0
+      },
+      "LeapFrog": {
+        "test_metric": {
+          "mean": 0.01202412936617309,
+          "std": 0.004454789263584998,
+          "median": 0.011331107575348918,
+          "min": 0.005138169235034415,
+          "max": 0.019014244767334817
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.17825099639994732,
+          "std": 0.003280854160029458,
+          "median": 0.17730406449982183,
+          "min": 0.17521533200033446,
+          "max": 0.1915753670000413
+        },
+        "convergence_rate": 0.0
+      }
+    },
+    "statistical_tests": {
+      "friedman_test_metric": {
+        "statistic": 48.26666666666665,
+        "p_value": 3.303897028950447e-11,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_SCG": {
+        "statistic": 0.0,
+        "p_value": 1.862645149230957e-09,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_LeapFrog": {
+        "statistic": 92.0,
+        "p_value": 0.0029870010912418365,
+        "significant": true
+      },
+      "wilcoxon_SCG_vs_LeapFrog": {
+        "statistic": 0.0,
+        "p_value": 1.862645149230957e-09,
+        "significant": true
+      }
+    }
+  },
+  "regression_3": {
+    "dataset_name": "Diabetes Progression",
+    "type": "multivariate_regression",
+    "hidden_units": 2,
+    "summary": {
+      "SGD": {
+        "test_metric": {
+          "mean": 0.513503677294926,
+          "std": 0.08217114725013526,
+          "median": 0.5132985599104307,
+          "min": 0.31867035372478936,
+          "max": 0.6520631608348118
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 5000.0,
+          "std": 0.0,
+          "median": 5000.0,
+          "min": 5000.0,
+          "max": 5000.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.3581329248664891,
+          "std": 0.0015472426454271907,
+          "median": 0.35828185549962654,
+          "min": 0.3547033240001838,
+          "max": 0.36248753199924977
+        },
+        "convergence_rate": 0.0
+      },
+      "SCG": {
+        "test_metric": {
+          "mean": 0.5917257997920282,
+          "std": 0.11390044454706451,
+          "median": 0.5870977398750549,
+          "min": 0.3897235057683593,
+          "max": 0.8879317234131362
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 999.7333333333333,
+          "std": 1.229895799716756,
+          "median": 999.0,
+          "min": 997.0,
+          "max": 1001.0
+        },
+        "iterations": {
+          "mean": 499.3666666666667,
+          "std": 0.614947899858378,
+          "median": 499.0,
+          "min": 498.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.1339066166666271,
+          "std": 0.0004566625892337129,
+          "median": 0.13400611350016334,
+          "min": 0.1328220749992397,
+          "max": 0.13467231999948126
+        },
+        "convergence_rate": 0.0
+      },
+      "LeapFrog": {
+        "test_metric": {
+          "mean": 0.5353153516661975,
+          "std": 0.08800577048474449,
+          "median": 0.5256783106439771,
+          "min": 0.3174096438211693,
+          "max": 0.6596581981633501
+        },
+        "func_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "grad_evals": {
+          "mean": 501.0,
+          "std": 0.0,
+          "median": 501.0,
+          "min": 501.0,
+          "max": 501.0
+        },
+        "iterations": {
+          "mean": 500.0,
+          "std": 0.0,
+          "median": 500.0,
+          "min": 500.0,
+          "max": 500.0
+        },
+        "wall_time": {
+          "mean": 0.08845008063329564,
+          "std": 0.0002684855016857532,
+          "median": 0.08848872099997607,
+          "min": 0.08797572000003129,
+          "max": 0.0889169829997627
+        },
+        "convergence_rate": 0.0
+      }
+    },
+    "statistical_tests": {
+      "friedman_test_metric": {
+        "statistic": 25.399999999999977,
+        "p_value": 3.051125558036454e-06,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_SCG": {
+        "statistic": 12.0,
+        "p_value": 1.30385160446167e-07,
+        "significant": true
+      },
+      "wilcoxon_SGD_vs_LeapFrog": {
+        "statistic": 82.0,
+        "p_value": 0.001340603455901146,
+        "significant": true
+      },
+      "wilcoxon_SCG_vs_LeapFrog": {
+        "statistic": 60.0,
+        "p_value": 0.00016989745199680328,
+        "significant": true
+      }
+    }
+  }
+}

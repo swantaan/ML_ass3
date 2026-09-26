@@ -177,8 +177,14 @@ class ComparisonExperiment:
         for alg, col in alg_colors.items():
             curves = ds_record["algorithms"][alg]["loss_curves"]
             if curves:
-                min_len = min(len(c) for c in curves)
-                arr = np.array([c[:min_len] for c in curves])
+                max_len = max(len(c) for c in curves)
+                padded = []
+                for c in curves:
+                    if len(c) < max_len:
+                        padded.append(list(c) + [c[-1]] * (max_len - len(c)))
+                    else:
+                        padded.append(c)
+                arr = np.array(padded)
                 mean_curve = np.mean(arr, axis=0)
                 ax1.plot(mean_curve, label=alg, color=col, linewidth=1.8)
 
@@ -206,9 +212,14 @@ class ComparisonExperiment:
 
     def _export_tables(self, benchmark_results: Dict, tables_dir: str) -> None:
         lines = []
+        lines.append("\\documentclass[conference]{IEEEtran}")
+        lines.append("\\usepackage{amsmath}")
+        lines.append("\\usepackage{booktabs}")
+        lines.append("\\begin{document}")
         lines.append("\\begin{table*}[t]")
         lines.append("\\centering")
         lines.append("\\caption{Experimental Comparison of SGD, SCG, and LeapFrog across Benchmark Problems}")
+        lines.append("\\label{tab:comparison}")
         lines.append("\\begin{tabular}{llcccc}")
         lines.append("\\hline")
         lines.append("Problem & Algorithm & Test Metric (Mean $\\pm$ SD) & Function Evals & Gradient Evals & CPU Time (s) \\\\")
@@ -232,7 +243,8 @@ class ComparisonExperiment:
 
         lines.append("\\end{tabular}")
         lines.append("\\end{table*}")
+        lines.append("\\end{document}")
 
         tex_path = os.path.join(tables_dir, "comparison_table.tex")
         with open(tex_path, "w") as f:
-            f.write("\n".join(lines))
+            f.write("\n".join(lines) + "\n")
