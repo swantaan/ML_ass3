@@ -1,0 +1,19 @@
+{
+  "name": "Diabetes Progression",
+  "type": "multivariate_regression",
+  "n_samples": 442,
+  "n_features": 10,
+  "feature_names": [
+    "age",
+    "sex",
+    "bmi",
+    "bp",
+    "s1",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6"
+  ],
+  "complexity": "Real-world clinical regression dataset with 10 physiological and biometric patient variables."
+}

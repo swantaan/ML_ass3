@@ -1,0 +1,28 @@
+{
+  "name": "Wine Recognition",
+  "type": "multiclass_classification",
+  "n_samples": 178,
+  "n_features": 13,
+  "n_classes": 3,
+  "feature_names": [
+    "alcohol",
+    "malic_acid",
+    "ash",
+    "alcalinity_of_ash",
+    "magnesium",
+    "total_phenols",
+    "flavanoids",
+    "nonflavanoid_phenols",
+    "proanthocyanins",
+    "color_intensity",
+    "hue",
+    "od280/od315_of_diluted_wines",
+    "proline"
+  ],
+  "target_names": [
+    "class_0",
+    "class_1",
+    "class_2"
+  ],
+  "complexity": "Low-to-medium dimensional tabular multiclass problem with 13 continuous chemical features."
+}

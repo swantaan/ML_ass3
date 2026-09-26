@@ -1,0 +1,10 @@
+{
+  "name": "Damped Sinc Function",
+  "type": "univariate_regression",
+  "n_samples": 500,
+  "n_features": 1,
+  "feature_names": [
+    "x"
+  ],
+  "complexity": "Non-linear oscillatory univariate continuous function approximation with noise."
+}
