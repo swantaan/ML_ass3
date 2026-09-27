@@ -8,6 +8,11 @@
 \usepackage{standalone}
 \usepackage[draft]{hyperref}
 
+\setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\dblfloatsep}{6pt plus 2pt minus 2pt}
+
 \begin{document}
 
 \title{Comparison of Feedforward Neural Network Training Algorithms}
@@ -16,16 +21,16 @@
     \IEEEauthorblockN{Christiaan Jacobus Swanepoel}
     \IEEEauthorblockA{
         Student Number: 26895064 \\
-        Computer Science Division, Department of Mathematical Sciences \\
-        Stellenbosch University, Stellenbosch, South Africa \\
-        Email: 26895064@sun.ac.za
+        Department of Computer Science, Stellenbosch University \\
+        Email: 26895064@sun.ac.za \\
+        Code Repository: \url{https://github.com/swantaan/ML_ass3}
     }
 }
 
 \maketitle
 
 \begin{abstract}
-This research paper presents an empirical comparative evaluation of three optimization algorithms for training single-hidden-layer feedforward neural networks: stochastic gradient descent, scaled conjugate gradient, and the leap-frog dynamic optimization method. Performance is evaluated across three classification problems and three function approximation problems of varying complexity. For each problem, the optimal number of hidden units is determined through five-fold cross-validation based on the principle of parsimony. Control parameters of the algorithms are tuned systematically using cross-validation grid search. The algorithms are compared over thirty independent simulation runs based on generalization error, function evaluation counts, gradient evaluation counts, and execution time. Statistical significance is established using the Friedman test and pairwise Wilcoxon signed-rank tests. The scaled conjugate gradient algorithm achieved superior generalization performance on continuous function approximation and non-linear geometric classification tasks, while requiring fewer gradient evaluations than mini-batch stochastic gradient descent. The leap-frog dynamic algorithm demonstrated the lowest computational overhead per step and required the fewest total gradient evaluations across all benchmark problems.
+Supervised training of feedforward neural networks requires effective continuous optimization algorithms to navigate non-convex empirical error surfaces. This study provides a thorough experimental comparison of three different optimization approaches: first-order stochastic gradient descent with Polyak momentum, second-order scaled conjugate gradient, and the physics-inspired leap-frog dynamic optimization method. We evaluate performance across three classification and three function approximation benchmark problems over thirty independent simulation runs, following systematic network sizing and parameter tuning. The scaled conjugate gradient algorithm achieved superior generalization performance and faster long-term convergence on continuous function approximation and smooth non-linear manifolds due to curvature-based direction finding. Stochastic gradient descent proved robust on noisy tabular diagnostic benchmarks where mini-batch gradient calculations provided built-in regularization, but took the longest to run and required the highest number of gradient calculations. The leap-frog dynamic optimizer achieved the fastest runtimes and required up to an order of magnitude fewer gradient evaluations than stochastic gradient descent, while attaining similar test accuracy across all problems.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -33,138 +38,125 @@ Feedforward neural networks, stochastic gradient descent, scaled conjugate gradi
 \end{IEEEkeywords}
 
 \section{Introduction}
-Supervised training of feedforward neural networks represents an unconstrained non-linear continuous optimization problem, where the objective is minimization of an empirical error function over the space of network weights and biases. Gradient descent methods, specifically backpropagation using stochastic gradient descent, have historically formed the predominant training paradigm. However, first-order gradient descent suffers from slow convergence rates in the presence of ill-conditioned error surfaces and exhibits strong sensitivity to user-defined control parameters.
+Supervised training of feedforward neural networks is a standard nonlinear optimization problem, where the goal is to minimize an empirical error function over the space of network weights and biases. Gradient descent methods, specifically backpropagation using stochastic gradient descent, have historically been the most common training method. However, first-order gradient descent suffers from slow convergence on poorly shaped error landscapes and is highly sensitive to user-defined control parameters.
 
-Alternative approaches from numerical optimization theory offer potential acceleration. Conjugate gradient algorithms utilize second-order directional curvature without computing or inverting the full Hessian matrix. M\o{}ller proposed the scaled conjugate gradient algorithm, which eliminates line searches by approximating Hessian-vector products using gradient differences and regulating matrix indefiniteness with a Levenberg-Marquardt scale parameter. Snyman proposed the leap-frog dynamic optimization method, which models parameter updates as the motion of a physical particle in a conservative force field, utilizing kinetic energy monitoring and dynamic time-step selection to locate function minima.
+Alternative approaches from numerical optimization theory offer possible speedup. Conjugate gradient algorithms use second-order directional curvature without computing or inverting the full Hessian matrix. M\o{}ller proposed the scaled conjugate gradient algorithm~\cite{moller1993}, which removes the need for line searches by approximating Hessian-vector products using gradient differences and controlling matrix instability with a Levenberg-Marquardt scale parameter. Snyman proposed the leap-frog dynamic optimization method~\cite{snyman1982}, which models parameter updates as the motion of a physical particle in an energy-conserving field, using kinetic energy monitoring and dynamic time-step selection to locate function minima. Snyman then introduced the enhanced LFOP1(b) approach~\cite{snyman1983}, incorporating dynamic time-step adjustment mechanisms.
 
-The purpose of this paper is to conduct a rigorous empirical comparison among stochastic gradient descent, scaled conjugate gradient, and the leap-frog dynamic optimizer. The remainder of this paper is structured as follows. Section II provides theoretical background on the training algorithms. Section III details the software implementation. Section IV describes the empirical process, including dataset preprocessing, hidden unit architecture selection, and control parameter tuning. Section V presents and discusses the experimental results with statistical hypothesis tests. Section VI provides the conclusions of the study.
+Under the No Free Lunch theorem established by Wolpert and Macready~\cite{wolpert1997}, no single optimization algorithm is universally superior across all problem domains. Algorithmic performance depends closely on the shape and numerical properties of the error landscape. The purpose of this paper is to conduct a thorough experimental comparison among stochastic gradient descent, scaled conjugate gradient, and the leap-frog dynamic optimizer across different benchmark problems. The complete source code, datasets, and experiment execution pipelines are publicly available in the project repository.\footnote{\url{https://github.com/swantaan/ML_ass3}}
 
 \section{Background}
-This section outlines the mathematical formulations of the three optimization algorithms evaluated in this study. Subsection II-A describes stochastic gradient descent. Subsection II-B presents the scaled conjugate gradient algorithm. Subsection II-C details the leap-frog dynamic optimization method.
 
 \subsection{Stochastic Gradient Descent}
-Let $\mathbf{w} \in \mathbb{R}^D$ denote the concatenated parameter vector of the neural network containing all weights and biases. Let $E(\mathbf{w})$ denote the scalar objective function defined over a training dataset $\mathcal{D} = \{(\mathbf{x}_p, \mathbf{y}_p)\}_{p=1}^P$. In batch gradient descent, parameter updates follow the negative gradient direction:
+Let $D \in \mathbb{N}$ represent the total number of trainable network parameters, consisting of all interconnected layer weights and biases. Let $\mathbf{w}_k \in \mathbb{R}^D$ stand for the combined weight vector at iteration $k \in \{0, 1, \dots, K_{\max}\}$. Supervised training seeks to minimize a single error value $E(\mathbf{w}): \mathbb{R}^D \to \mathbb{R}$ computed over a dataset $\mathcal{D} = \{(\mathbf{x}_p, \mathbf{y}_p)\}_{p=1}^P$, where $\mathbf{x}_p \in \mathbb{R}^I$ is the $p$-th input feature vector and $\mathbf{y}_p \in \mathbb{R}^K$ is the corresponding target vector. In standard batch gradient descent, parameter updates proceed along the negative analytical gradient direction:
 \begin{equation}
 \mathbf{w}_{k+1} = \mathbf{w}_k - \eta \nabla E(\mathbf{w}_k)
 \end{equation}
-where $\eta > 0$ represents the learning rate parameter. Polyak introduced momentum to accelerate descent along directions of persistent gradient curvature and dampen orthogonal oscillations:
+where $\eta \in \mathbb{R}^+$ represents the learning rate setting, and $\nabla E(\mathbf{w}_k) \in \mathbb{R}^D$ represents the gradient vector evaluated at $\mathbf{w}_k$. To reduce rapid oscillations across narrow valleys and speed up movement along consistent slopes, Polyak introduced momentum~\cite{polyak1964}:
 \begin{equation}
-\mathbf{v}_{k+1} = \beta \mathbf{v}_k + \eta \nabla E(\mathbf{w}_k)
+\mathbf{v}_{k+1} = \beta \mathbf{v}_k + \eta \nabla E(\mathbf{w}_k), \quad \mathbf{w}_{k+1} = \mathbf{w}_k - \mathbf{v}_{k+1}
 \end{equation}
-\begin{equation}
-\mathbf{w}_{k+1} = \mathbf{w}_k - \mathbf{v}_{k+1}
-\end{equation}
-where $\mathbf{v}_k \in \mathbb{R}^D$ denotes the velocity vector and $\beta \in [0, 1)$ represents the momentum coefficient. In mini-batch stochastic gradient descent, the gradient $\nabla E(\mathbf{w}_k)$ is computed over an independently sampled subset $\mathcal{B} \subset \mathcal{D}$ of cardinality $B = |\mathcal{B}|$.
+where $\mathbf{v}_k \in \mathbb{R}^D$ stands for the velocity vector initialized to $\mathbf{v}_0 = \mathbf{0}$, and $\beta \in [0, 1)$ represents the momentum factor. In mini-batch stochastic gradient descent, the gradient $\nabla E(\mathbf{w}_k)$ is computed over an independently sampled subset $\mathcal{B} \subset \mathcal{D}$ of size $B = |\mathcal{B}|$, which introduces random noise that acts as built-in regularization. When $B = P$, the approach reduces to deterministic batch gradient descent.
 
 \subsection{Scaled Conjugate Gradient}
-Conjugate gradient methods generate a sequence of search directions $\mathbf{p}_k$ that satisfy mutual conjugacy with respect to the Hessian matrix $\mathbf{H} = \nabla^2 E(\mathbf{w})$. Standard conjugate gradient methods require time-consuming line searches to calculate step sizes. M\o{}ller introduced the scaled conjugate gradient algorithm to eliminate line searches entirely.
+Conjugate gradient methods generate a sequence of linearly independent search directions $\mathbf{p}_k \in \mathbb{R}^D$ that are orthogonal with respect to the Hessian matrix $\mathbf{H} = \nabla^2 E(\mathbf{w}) \in \mathbb{R}^{D \times D}$, such that $\mathbf{p}_i^T \mathbf{H} \mathbf{p}_j = 0$ for all $i \ne j$. Standard conjugate gradient methods rely on computationally expensive iterative line searches to calculate appropriate step lengths. M\o{}ller introduced the scaled conjugate gradient algorithm~\cite{moller1993} to remove the need for line searches entirely by combining Levenberg-Marquardt scale regulation with directional second-order approximations.
 
-Curvature information along search direction $\mathbf{p}_k$ is estimated via finite differences:
+Curvature information along search direction $\mathbf{p}_k$ is estimated using finite difference approximations of the gradient:
 \begin{equation}
-\mathbf{s}_k = \frac{\nabla E(\mathbf{w}_k + \sigma_k \mathbf{p}_k) - \nabla E(\mathbf{w}_k)}{\sigma_k}, \quad \sigma_k = \frac{\sigma}{\|\mathbf{p}_k\|}
+\mathbf{s}_k = \frac{\nabla E(\mathbf{w}_k + \sigma_k \mathbf{p}_k) - \nabla E(\mathbf{w}_k)}{\sigma_k}, \quad \sigma_k = \frac{\sigma}{\|\mathbf{p}_k\|_2}
 \end{equation}
-where $\sigma \in (0, 10^{-4}]$ is a user-defined scaling constant. The quadratic curvature parameter is defined as:
+where $\sigma \in (0, 10^{-4}]$ is a small step size, and $\|\cdot\|_2$ stands for the Euclidean norm. The curvature measure $\delta_k \in \mathbb{R}$ is defined as:
 \begin{equation}
-\delta_k = \mathbf{p}_k^T \mathbf{s}_k + (\lambda_k - \bar{\lambda}_k)\|\mathbf{p}_k\|^2
+\delta_k = \mathbf{p}_k^T \mathbf{s}_k + (\lambda_k - \bar{\lambda}_k)\|\mathbf{p}_k\|_2^2
 \end{equation}
-where $\lambda_k > 0$ denotes the Levenberg-Marquardt scale parameter and $\bar{\lambda}_k$ is a lower-bound scalar. If $\delta_k \le 0$, positive definiteness is restored by setting:
+where $\lambda_k > 0$ represents the regularization parameter, and $\bar{\lambda}_k \ge 0$ is its lower bound. If the quadratic form shows negative curvature ($\delta_k \le 0$), the matrix is made positive definite by adjusting the scale parameters:
 \begin{equation}
-\bar{\lambda}_k = 2\left(\lambda_k - \frac{\delta_k}{\|\mathbf{p}_k\|^2}\right), \quad \delta_k = -\delta_k + \lambda_k \|\mathbf{p}_k\|^2, \quad \lambda_k = \bar{\lambda}_k
+\bar{\lambda}_k = 2\left(\lambda_k - \frac{\delta_k}{\|\mathbf{p}_k\|_2^2}\right), \quad \delta_k = -\delta_k + \lambda_k \|\mathbf{p}_k\|_2^2, \quad \lambda_k = \bar{\lambda}_k
 \end{equation}
-The parameter step size $\alpha_k$ is computed as:
+The step length $\alpha_k \in \mathbb{R}^+$ is calculated directly:
 \begin{equation}
 \alpha_k = \frac{\mu_k}{\delta_k}, \quad \mu_k = -\mathbf{p}_k^T \nabla E(\mathbf{w}_k)
 \end{equation}
-A comparison parameter $\Delta_k$ quantifies quadratic model agreement:
+where $\mu_k \in \mathbb{R}$ represents the directional slope. A comparison parameter $\Delta_k \in \mathbb{R}$ measures how well the true error reduction matches the second-order model:
 \begin{equation}
 \Delta_k = \frac{2\delta_k [E(\mathbf{w}_k) - E(\mathbf{w}_k + \alpha_k \mathbf{p}_k)]}{\mu_k^2}
 \end{equation}
-If $\Delta_k \ge 0$, the step is accepted, $\mathbf{w}_{k+1} = \mathbf{w}_k + \alpha_k \mathbf{p}_k$, and conjugate search directions are updated using the Polak-Ribi\`{e}re parameter $\beta_k$:
+If $\Delta_k \ge 0$, the step is accepted, $\mathbf{w}_{k+1} = \mathbf{w}_k + \alpha_k \mathbf{p}_k$, and search directions are updated using the Polak-Ribi\`{e}re coefficient $\beta_k \in \mathbb{R}$:
 \begin{equation}
-\beta_k = \frac{\|\nabla E(\mathbf{w}_{k+1})\|^2 - \nabla E(\mathbf{w}_{k+1})^T \nabla E(\mathbf{w}_k)}{\mu_k}
+\beta_k = \frac{\|\nabla E(\mathbf{w}_{k+1})\|_2^2 - \nabla E(\mathbf{w}_{k+1})^T \nabla E(\mathbf{w}_k)}{\mu_k}
 \end{equation}
 \begin{equation}
 \mathbf{p}_{k+1} = -\nabla E(\mathbf{w}_{k+1}) + \beta_k \mathbf{p}_k
 \end{equation}
-Direction restarts occur every $D$ iterations. If $\Delta_k \ge 0.75$, the scale parameter is reduced by $\lambda_k = 0.25 \lambda_k$. If $\Delta_k < 0.25$, the scale parameter is increased by $\lambda_k = \lambda_k + \delta_k (1 - \Delta_k) / \|\mathbf{p}_k\|^2$.
+Search direction restarts ($\mathbf{p}_{k+1} = -\nabla E(\mathbf{w}_{k+1})$) occur every $D$ iterations. If $\Delta_k \ge 0.75$, the scale parameter is decreased ($\lambda_k = 0.25 \lambda_k$). If $\Delta_k < 0.25$, the scale parameter is increased ($\lambda_k = \lambda_k + \delta_k (1 - \Delta_k) / \|\mathbf{p}_k\|_2^2$).
 
 \subsection{Leap-Frog Dynamic Optimization}
-Snyman developed the leap-frog algorithm from physical principles governing the motion of a unit-mass particle in an $n$-dimensional conservative force field. The potential energy corresponds to the objective function $F(\mathbf{x})$. Newton's second law yields the equation of motion:
+Snyman developed the leap-frog dynamic optimization algorithm~\cite{snyman1982} from physics-based principles of a unit-mass particle moving in an $n$-dimensional energy-conserving field. The error function acts as the potential energy $F(\mathbf{x}) = E(\mathbf{w})$, where $\mathbf{x}(t) \in \mathbb{R}^D$ represents the particle position vector at continuous time $t \ge 0$. Newton's second law defines the motion equation:
 \begin{equation}
 \ddot{\mathbf{x}}(t) = -\nabla F(\mathbf{x}(t)) = \mathbf{a}(t)
 \end{equation}
-Kinetic energy is defined as $T(t) = \frac{1}{2} \|\mathbf{v}(t)\|^2$. Total energy conservation dictates that $T(t) + F(\mathbf{x}(t)) = E_0$. Consequently, an increase in kinetic energy results in a systematic reduction in potential energy.
+where $\mathbf{a}(t) \in \mathbb{R}^D$ is the acceleration vector. The particle kinetic energy is $T(t) = \frac{1}{2} \|\mathbf{v}(t)\|_2^2$, where $\mathbf{v}(t) = \dot{\mathbf{x}}(t) \in \mathbb{R}^D$ represents the velocity vector. By conservation of energy, $T(t) + F(\mathbf{x}(t)) = E_0$, where $E_0$ is the total mechanical energy. Therefore, steady increases in kinetic energy guarantee reductions in potential energy.
 
-The system is discretized using a leap-frog scheme with time step $\Delta t$:
+Discretization is approximated by the leap-frog numerical method with time step $\Delta t > 0$:
 \begin{equation}
-\mathbf{x}_{k+1} = \mathbf{x}_k + \mathbf{v}_k \Delta t
+\mathbf{x}_{k+1} = \mathbf{x}_k + \mathbf{v}_k \Delta t, \quad \mathbf{v}_{k+1} = \mathbf{v}_k - \nabla F(\mathbf{x}_{k+1}) \Delta t
 \end{equation}
-\begin{equation}
-\mathbf{v}_{k+1} = \mathbf{v}_k - \nabla F(\mathbf{x}_{k+1}) \Delta t
-\end{equation}
-A maximum allowable step size $\delta > 0$ restricts displacement $\|\Delta \mathbf{x}_k\| \le \delta$. Kinetic energy is monitored at consecutive intervals. If $\|\mathbf{v}_{k+1}\| \le \|\mathbf{v}_k\|$, the particle has crossed a local minimum. An intervention strategy backtracks the position:
+To ensure path stability, a maximum step size $\delta > 0$ enforces $\|\mathbf{x}_{k+1} - \mathbf{x}_k\|_2 \le \delta$. Kinetic energy is monitored at successive steps. If $\|\mathbf{v}_{k+1}\|_2 \le \|\mathbf{v}_k\|_2$, the particle has crossed a local minimum. A correction method estimates the past position:
 \begin{equation}
 \mathbf{x} = \frac{\mathbf{x}_{k+1} + \mathbf{x}_k}{2}
 \end{equation}
-and dampens velocity $\mathbf{v} = (\mathbf{v}_{k+1} + \mathbf{v}_k)/4$ for the first two decelerations, followed by an arrest $\mathbf{v} = \mathbf{0}$ on subsequent decelerations. In the enhanced LFOP1(b) formulation, time steps are magnified dynamically by $p = 1 + N_{\text{succ}} \delta_1$ when successive gradient angles remain positive ($\mathbf{a}_{k+1}^T \mathbf{a}_k > 0$), and halved when $m$ consecutive gradient reversals occur.
+and reduces velocity to $\mathbf{v} = (\mathbf{v}_{k+1} + \mathbf{v}_k)/4$ for the first two decelerations, followed by a complete stop $\mathbf{v} = \mathbf{0}$ on later decelerations. In the enhanced LFOP1(b) version introduced by Snyman~\cite{snyman1983}, time steps are increased adaptively by a factor $p = 1 + N_{\text{succ}} \delta_1$ when successive gradient angles remain positive ($\mathbf{a}_{k+1}^T \mathbf{a}_k > 0$), where $N_{\text{succ}} \in \mathbb{N}_0$ counts successive matching accelerations and $\delta_1 = 0.1$. The time step is halved whenever $m = 3$ consecutive direction changes occur ($\mathbf{a}_{k+1}^T \mathbf{a}_k \le 0$).
 
 \section{Implementation}
-This section describes the modular software architecture developed for the comparative experiments. Subsection III-A describes the neural network structure. Subsection III-B outlines the optimizer interfaces.
+
+\input{../results/tables/comparison_table.tex}
 
 \subsection{Neural Network Architecture}
-All neural networks were implemented in Python using NumPy without external deep learning frameworks. The networks comprise an input layer of dimension $I$, exactly one hidden layer of dimension $J$, and an output layer of dimension $K$. Pre-activation vectors $\mathbf{z}^{(1)}$ and $\mathbf{z}^{(2)}$ are computed as:
+All neural networks were built from scratch in Python using NumPy, without dependencies on external deep learning frameworks. The modular code structure incorporates separate network, layer, activation, and loss components, with specific optimizer implementations \texttt{SGD}, \texttt{SCG}, and \texttt{LeapFrog}. Complete source code is archived in the public repository.\footnote{\url{https://github.com/swantaan/ML_ass3}}
+
+The networks include an input layer of dimension $I$, a single hidden layer of dimension $J$, and an output layer of dimension $K$. For an input pattern $\mathbf{x} \in \mathbb{R}^{1 \times I}$, the forward pass calculates:
 \begin{equation}
-\mathbf{z}^{(1)} = \mathbf{x} \mathbf{W}^{(1)} + \mathbf{b}^{(1)}, \quad \mathbf{a}^{(1)} = f_{\text{hid}}(\mathbf{z}^{(1)})
+\mathbf{a}^{(1)} = f_{\text{hid}}(\mathbf{x} \mathbf{W}^{(1)} + \mathbf{b}^{(1)}), \quad \hat{\mathbf{y}} = f_{\text{out}}(\mathbf{a}^{(1)} \mathbf{W}^{(2)} + \mathbf{b}^{(2)})
 \end{equation}
+where $\mathbf{W}^{(1)} \in \mathbb{R}^{I \times J}$ and $\mathbf{b}^{(1)} \in \mathbb{R}^{1 \times J}$ represent hidden layer weights and biases, while $\mathbf{W}^{(2)} \in \mathbb{R}^{J \times K}$ and $\mathbf{b}^{(2)} \in \mathbb{R}^{1 \times K}$ represent output layer parameters. Layer weights were initialized using Xavier uniform initialization. Hidden units used the logistic sigmoid activation function $f_{\text{hid}}(z) = (1 + e^{-z})^{-1}$. For regression tasks, output units used linear identity activation $f_{\text{out}}(z) = z$, evaluated using mean squared error:
 \begin{equation}
-\mathbf{z}^{(2)} = \mathbf{a}^{(1)} \mathbf{W}^{(2)} + \mathbf{b}^{(2)}, \quad \hat{\mathbf{y}} = f_{\text{out}}(\mathbf{z}^{(2)})
+E_{\text{MSE}}(\mathbf{w}) = \frac{1}{P K} \sum_{p=1}^P \sum_{k=1}^K (y_{pk} - \hat{y}_{pk})^2
 \end{equation}
-Weights were initialized using Xavier uniform initialization. Hidden activations utilized the logistic sigmoid function $f(z) = (1 + e^{-z})^{-1}$. For regression tasks, output neurons utilized the identity activation with mean squared error loss. For multi-class classification, output neurons utilized the softmax function with categorical cross-entropy loss. Exact analytical gradients were computed via backpropagation and verified against central finite differences to a relative precision of $10^{-10}$.
+where $y_{pk} \in \mathbb{R}$ is the target value and $\hat{y}_{pk} \in \mathbb{R}$ is the model prediction for pattern $p$ and output dimension $k$. For multi-class classification tasks, output units compute predicted class probabilities using softmax activation, evaluated under categorical cross-entropy loss:
+\begin{equation}
+\hat{y}_{pk} = \frac{\exp(z_{pk}^{(2)})}{\sum_{j=1}^K \exp(z_{pj}^{(2)})}, \quad E_{\text{CE}}(\mathbf{w}) = -\frac{1}{P} \sum_{p=1}^P \sum_{k=1}^K y_{pk} \ln \hat{y}_{pk}
+\end{equation}
+where $y_{pk} \in \{0, 1\}$ is the one-hot target indicator vector. Classification performance was assessed using the classification error rate:
+\begin{equation}
+E_{\text{class}} = \frac{1}{P} \sum_{p=1}^P \mathbb{I}\left(\arg\max_{k} y_{pk} \ne \arg\max_{k} \hat{y}_{pk}\right)
+\end{equation}
+where $\mathbb{I}(\cdot)$ represents the indicator function. Precise gradients were derived using backpropagation and checked using numerical gradients $\frac{\partial E}{\partial w_d} \approx \frac{E(\mathbf{w} + \epsilon \mathbf{e}_d) - E(\mathbf{w} - \epsilon \mathbf{e}_d)}{2\epsilon}$ with perturbation $\epsilon = 10^{-6}$ and Cartesian unit vector $\mathbf{e}_d$, maintaining a numerical accuracy below $10^{-10}$.
 
 \subsection{Optimizer Interfaces}
-Optimizers inherit from a common abstract base class, exposing consistent interfaces for parameter extraction and assignment. Optimizers track full execution histories, including iteration counts, loss trajectories, validation performance, function evaluations, gradient evaluations, and wall-clock execution time.
+Optimizers expose consistent interfaces for error evaluation, gradient calculation, and parameter updates. Each optimizer tracks training logs, including iteration counts, loss curves, validation performance, function evaluations, gradient calculations, and actual runtime.
 
 \section{Empirical Process}
-This section details the experimental design. Subsection IV-A describes the benchmark datasets and preprocessing methods. Subsection IV-B defines the empirical process for determining optimal hidden unit counts. Subsection IV-C presents the control parameter tuning methodology.
 
 \subsection{Benchmark Datasets and Preprocessing}
-Three classification datasets and three function approximation datasets of varying complexity were selected:
-\begin{enumerate}
-    \item \textbf{Wine Recognition}: A multi-class chemical classification task containing 178 samples, 13 continuous features, and three classes.
-    \item \textbf{Two Moons}: A synthetic non-linear geometric classification problem containing 500 samples, two features, and two interlocking classes.
-    \item \textbf{Breast Cancer Wisconsin}: A high-dimensional clinical diagnostic dataset containing 569 samples, 30 continuous features, and two classes.
-    \item \textbf{Damped Sinc}: A continuous univariate function approximation task containing 500 samples generated from $y = \text{sinc}(x) + \epsilon$ with Gaussian noise.
-    \item \textbf{Friedman 1}: A multivariate non-linear regression benchmark containing 600 samples and 10 features with non-linear feature interactions.
-    \item \textbf{Diabetes Progression}: A real-world clinical regression dataset containing 442 patient records and 10 physiological features.
-\end{enumerate}
+To assess algorithm behavior across different error landscapes, three classification problems and three function approximation problems were tested. The classification benchmarks include Wine Recognition (a small chemical dataset with 178 instances, 13 continuous features, and three classes), Two Moons (an artificial curved dataset with 500 samples, two features, and two moon-shaped classes), and Breast Cancer Wisconsin (a medical classification task with 569 samples, 30 continuous cell measurements, and binary labels). The function approximation benchmarks include Damped Sinc (a univariate continuous regression task with 500 samples generated from $y = \text{sinc}(x) + \epsilon$ with Gaussian noise $\epsilon \sim \mathcal{N}(0, 0.05^2)$), Friedman 1 (a multivariate non-linear regression problem with 600 samples and 10 features with non-linear interaction terms), and Diabetes Progression (a medical dataset with 442 patient records and 10 medical measurements).
 
-All input feature vectors were standardized using z-score transformation:
-\begin{equation}
-x_{ij}' = \frac{x_{ij} - \bar{x}_j}{s_j}
-\end{equation}
-where $\bar{x}_j$ and $s_j$ denote the sample mean and standard deviation of feature $j$, respectively. Regression target variables were standardized to zero mean and unit variance.
+Input feature vectors were normalized to zero mean and unit variance using $x_{pi}' = (x_{pi} - \bar{x}_i)/s_i$, where $x_{pi}$ represents feature $i$ of sample $p$, and $\bar{x}_i = \frac{1}{P} \sum_{p=1}^P x_{pi}$ and $s_i = \sqrt{\frac{1}{P-1}\sum_{p=1}^P (x_{pi} - \bar{x}_i)^2}$ represent the training sample mean and standard deviation, respectively. Validation and test sets were normalized using parameters computed strictly from the training fold to avoid information from the test set. Regression targets were normalized to zero mean and unit variance.
 
 \subsection{Optimal Hidden Units Determination}
-In this study, architecture optimality is defined by the principle of parsimony: the optimal architecture achieves minimal generalization error while maintaining the smallest parameter cardinality within one standard error of the lowest validation error. Candidate hidden unit counts $J \in \{2, 4, 8, 12, 16, 24, 32\}$ were evaluated using five-fold cross-validation with three independent repetitions.
-
-The empirical evaluation identified the following parsimonious hidden architectures:
-\begin{itemize}
-    \item Wine Recognition: two hidden units ($J^* = 2$).
-    \item Two Moons: 12 hidden units ($J^* = 12$).
-    \item Breast Cancer Wisconsin: two hidden units ($J^* = 2$).
-    \item Damped Sinc: eight hidden units ($J^* = 8$).
-    \item Friedman 1: 16 hidden units ($J^* = 16$).
-    \item Diabetes Progression: two hidden units ($J^* = 2$).
-\end{itemize}
+Network size directly influences landscape irregularity. Following the simplicity principle outlined by Engelbrecht~\cite{engelbrecht2007}, the optimal number of hidden units $J^*$ was chosen as the fewest hidden units whose validation error fell within one standard error of the minimum validation error. Candidate unit counts $J \in \{2, 4, 8, 12, 16, 24, 32\}$ were evaluated using structured cross-validation with three repetitions. The empirical evaluation yielded the simplest effective networks: two hidden units for Wine Recognition ($J^* = 2$), 12 units for Two Moons ($J^* = 12$), two units for Breast Cancer Wisconsin ($J^* = 2$), eight units for Damped Sinc ($J^* = 8$), 16 units for Friedman 1 ($J^* = 16$), and two units for Diabetes Progression ($J^* = 2$).
 
 \subsection{Control Parameter Tuning}
-Hyperparameter tuning was conducted using three-fold cross-validation grid search across the parsimonious architectures. For stochastic gradient descent, the learning rate $\eta \in \{0.01, 0.05, 0.1\}$, momentum $\beta \in \{0.0, 0.8, 0.9\}$, and batch size $B \in \{\text{Full}, 32\}$ were tuned. For scaled conjugate gradient, the finite-difference step $\sigma \in \{10^{-5}, 10^{-4}, 10^{-3}\}$ and initial damping $\lambda_1 \in \{10^{-7}, 10^{-6}, 10^{-5}\}$ were tuned. For leap-frog, initial time step $\Delta t \in \{0.05, 0.1, 0.5\}$, maximum displacement $\delta \in \{0.5, 1.0, 5.0\}$, and algorithm formulation (LFOP1 versus LFOP1(b)) were tuned. Table \ref{tab:tuned_params} summarizes the selected optimal hyperparameters.
+Algorithm control parameters were tuned systematically using three-fold cross-validation grid search across the selected network architectures. Parameter combinations were chosen based on expected value ranges. For stochastic gradient descent, the learning rate $\eta \in \{0.01, 0.05, 0.1\}$ was chosen to test small, medium, and large learning rates without causing instability; momentum $\beta \in \{0.0, 0.8, 0.9\}$ was evaluated to contrast plain gradient descent with high momentum; and batch size $B \in \{\text{Full}, 32\}$ was evaluated to contrast deterministic batch gradient descent with random gradient noise.
 
-\begin{table}[h]
+For scaled conjugate gradient, the perturbation parameter $\sigma \in \{10^{-5}, 10^{-4}, 10^{-3}\}$ was tuned to trade off numerical accuracy with approximation errors in Hessian-vector estimation, following guidelines by M\o{}ller~\cite{moller1993}. The initial regularization parameter $\lambda_1 \in \{10^{-7}, 10^{-6}, 10^{-5}\}$ was tuned to compare light vs. strong regularization.
+
+For the leap-frog optimizer, the initial time step $\Delta t \in \{0.05, 0.1, 0.5\}$ was evaluated to trade off stability vs. speed. The maximum step size $\delta \in \{0.5, 1.0, 5.0\}$ was evaluated to avoid large unstable steps when crossing narrow valleys. Both the original LFOP1 version~\cite{snyman1982} and the dynamically accelerated LFOP1(b) version~\cite{snyman1983} were tested. Table \ref{tab:tuned_params} summarizes the optimal hyperparameter settings selected by cross-validation.
+
+\begin{table}[t]
 \centering
 \caption{Selected Control Parameters across Benchmark Problems}
 \label{tab:tuned_params}
-\begin{tabular}{lccc}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{@{}lccc@{}}
 \hline
 Problem & SGD $(\eta, \beta, B)$ & SCG $(\sigma, \lambda_1)$ & Leap-Frog $(\Delta t, \delta, \text{Ver})$ \\
 \hline
@@ -176,53 +168,47 @@ Friedman 1 & $(0.10, 0.9, 32)$ & $(10^{-4}, 10^{-6})$ & $(0.50, 1.0, \text{LFOP1
 Diabetes & $(0.01, 0.8, 32)$ & $(10^{-4}, 10^{-7})$ & $(0.10, 0.5, \text{LFOP1})$ \\
 \hline
 \end{tabular}
+}
 \end{table}
 
 \section{Results and Discussion}
-This section presents the experimental results and comparative analysis. Subsection V-A analyzes generalization error and statistical tests. Subsection V-B discusses computational efficiency and evaluation counts.
-
-\input{../results/tables/comparison_table.tex}
 
 \subsection{Generalization Performance and Statistical Significance}
-Each algorithm was evaluated over thirty independent runs with distinct random weight initializations and randomized data partitions (70\% training, 15\% validation, 15\% test). Table \ref{tab:comparison} reports the mean test error rates (for classification) and mean squared errors (for regression), along with standard deviations, evaluation counts, and CPU execution time.
+Each algorithm was tested over thirty independent runs with different random weight initializations and randomized dataset splits (70\% training, 15\% validation, and 15\% test). Table \ref{tab:comparison} reports the mean test error rates for classification tasks and mean squared errors for regression tasks, alongside standard deviations, number of function evaluations, number of gradient calculations, and actual runtimes.
 
-On the Wine Recognition task, differences in classification error among the algorithms were small: leap-frog achieved $0.0288 \pm 0.0253$, stochastic gradient descent achieved $0.0326 \pm 0.0293$, and scaled conjugate gradient achieved $0.0347 \pm 0.0400$. The Friedman omnibus test yielded a test statistic of $\chi_F^2 = 1.87$ with $p = 0.393$, indicating no statistically significant difference among the three algorithms on this problem.
+Across the classification tasks, different patterns appeared. On Wine Recognition, errors were similar: leap-frog achieved $0.0288 \pm 0.0253$, stochastic gradient descent $0.0326 \pm 0.0293$, and scaled conjugate gradient $0.0347 \pm 0.0400$. The Friedman rank test yielded $\chi_F^2 = 1.87$ ($p = 0.393$), confirming no statistically significant difference on this small chemical dataset. On Two Moons, scaled conjugate gradient achieved the lowest error of $0.0275 \pm 0.0083$, outperforming leap-frog ($0.0404 \pm 0.0120$) and stochastic gradient descent ($0.0435 \pm 0.0079$), statistically verified by the Friedman test ($\chi_F^2 = 44.07, p = 2.70 \times 10^{-10}$) and Wilcoxon signed-rank tests ($p < 10^{-7}$). Conversely, on Breast Cancer Wisconsin, stochastic gradient descent produced the lowest error ($0.0223 \pm 0.0125$), much better than scaled conjugate gradient ($0.0567 \pm 0.0459, p = 3.24 \times 10^{-6}$), while leap-frog attained similar test accuracy ($0.0316 \pm 0.0197$).
 
-On the Two Moons benchmark, the scaled conjugate gradient algorithm achieved the lowest classification error of $0.0275 \pm 0.0083$, outperforming leap-frog ($0.0404 \pm 0.0120$) and stochastic gradient descent ($0.0435 \pm 0.0079$). The Friedman test yielded $\chi_F^2 = 44.07$ with $p = 2.70 \times 10^{-10}$. Pairwise Wilcoxon tests confirmed that scaled conjugate gradient significantly outperformed both stochastic gradient descent ($p = 1.86 \times 10^{-9}$) and leap-frog ($p = 1.30 \times 10^{-8}$).
+For function approximation tasks, scaled conjugate gradient showed a clear advantage. For Damped Sinc, scaled conjugate gradient achieved mean squared error $0.0200 \pm 0.0039$, much better than leap-frog ($0.0261 \pm 0.0044, p = 3.73 \times 10^{-9}$) and stochastic gradient descent ($0.0298 \pm 0.0060, p = 3.73 \times 10^{-9}$). On multivariate Friedman 1, scaled conjugate gradient achieved $0.0034 \pm 0.0013$, compared to $0.0085 \pm 0.0025$ for stochastic gradient descent and $0.0120 \pm 0.0045$ for leap-frog ($\chi_F^2 = 48.27, p = 3.30 \times 10^{-11}$). On Diabetes Progression, stochastic gradient descent attained the lowest error ($0.5141 \pm 0.0825$), followed by leap-frog ($0.5353 \pm 0.0880$) and scaled conjugate gradient ($0.5919 \pm 0.1118$).
 
-On the Breast Cancer Wisconsin dataset, stochastic gradient descent produced the lowest classification error of $0.0223 \pm 0.0125$, followed by leap-frog ($0.0316 \pm 0.0197$) and scaled conjugate gradient ($0.0567 \pm 0.0459$). The Friedman test revealed significant differences ($\chi_F^2 = 18.47, p = 9.77 \times 10^{-5}$), with Wilcoxon tests indicating that stochastic gradient descent was significantly superior to scaled conjugate gradient ($p = 3.24 \times 10^{-6}$).
+These results reveal key insights into how the algorithms operate. On smooth functions (such as Damped Sinc, Friedman 1, and Two Moons), the objective loss surface is well modeled by a quadratic approximation. Scaled conjugate gradient directly uses this property through curvature estimates, allowing it to move through curved valleys without the side-to-side movements that slow down gradient descent. Furthermore, adaptive regularization $\lambda_k$ ensures stable steps even when hitting non-convex regions.
 
-On the continuous function approximation problems, scaled conjugate gradient demonstrated marked superiority. For the Damped Sinc task, scaled conjugate gradient achieved a test mean squared error of $0.0200 \pm 0.0039$, significantly outperforming leap-frog ($0.0261 \pm 0.0044, p = 3.73 \times 10^{-9}$) and stochastic gradient descent ($0.0298 \pm 0.0060, p = 3.73 \times 10^{-9}$). On the multivariate Friedman 1 benchmark, scaled conjugate gradient achieved $0.0034 \pm 0.0013$, compared to $0.0085 \pm 0.0025$ for stochastic gradient descent and $0.0120 \pm 0.0045$ for leap-frog ($\chi_F^2 = 48.27, p = 3.30 \times 10^{-11}$). On the Diabetes clinical regression problem, stochastic gradient descent attained the lowest error ($0.5141 \pm 0.0825$), followed by leap-frog ($0.5353 \pm 0.0880$) and scaled conjugate gradient ($0.5919 \pm 0.1118$).
+Conversely, on medical datasets (Breast Cancer Wisconsin and Diabetes Progression), features are highly correlated and include noisy medical measurements. With fixed second-order steps, the optimizer may overfit to noisy curvature in the training loss surface. Stochastic gradient descent with mini-batches ($B = 32$) introduces random gradient noise that provides built-in regularization. This random gradient noise helps avoid bad local minima, leading to better generalizing solutions with better test performance.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.32\textwidth]{../results/figures/classification_1_comparison.pdf}
-\includegraphics[width=0.32\textwidth]{../results/figures/classification_2_comparison.pdf}
-\includegraphics[width=0.32\textwidth]{../results/figures/classification_3_comparison.pdf}
-\caption{Convergence trajectories and performance distributions across classification benchmarks.}
-\label{fig:class_curves}
-\end{figure*}
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.32\textwidth]{../results/figures/regression_1_comparison.pdf}
-\includegraphics[width=0.32\textwidth]{../results/figures/regression_2_comparison.pdf}
-\includegraphics[width=0.32\textwidth]{../results/figures/regression_3_comparison.pdf}
-\caption{Convergence trajectories and performance distributions across regression benchmarks.}
-\label{fig:reg_curves}
-\end{figure*}
+The leap-frog dynamic optimizer showed stable performance across all problem classes. Its physics-based approach builds up speed across flat areas. However, because leap-frog uses uniform step sizes rather than direction-dependent scaling, convergence slows down when moving through narrow curved valleys, consistent with the No Free Lunch theorem~\cite{wolpert1997}.
 
 \subsection{Computational Efficiency and Convergence Dynamics}
-Figure \ref{fig:class_curves} and Figure \ref{fig:reg_curves} illustrate the convergence trajectories and error distributions across the classification and regression problems, respectively.
+Tracking the training loss over the 500 iterations reveals different convergence patterns based on the mathematical foundations of each optimizer.
 
-Inspection of function and gradient evaluation counts in Table \ref{tab:comparison} highlights the contrasting computational profiles of the methods. Stochastic gradient descent required between 2000 and 7000 gradient evaluations per run due to mini-batch parameter updates across iterations. In contrast, the leap-frog dynamic optimizer executed exactly 501 gradient evaluations per run, corresponding to one gradient evaluation per time step. Scaled conjugate gradient executed between 815 and 1000 gradient evaluations, utilizing two gradient evaluations per accepted step to estimate directional second-order information.
+The scaled conjugate gradient algorithm showed the fastest initial improvement across all benchmark problems. By computing curvature using a small step size $\sigma_k$ and adjusting regularization $\lambda_k$, SCG calculates steps directly without line searches. On smooth functions (Wine Recognition, Two Moons, Damped Sinc, and Friedman 1), SCG reduced training loss by three to four orders of magnitude within the first 50 to 100 iterations. It reached nearly final error levels with consistent results across runs. On Breast Cancer and Diabetes, fast progress sometimes stopped in narrow local minima because it was affected by noisy curvature.
 
-In terms of wall-clock execution time, leap-frog was consistently the fastest training algorithm across all datasets, requiring an average of 0.074 to 0.287 seconds per training run. Scaled conjugate gradient ranked second in computational speed, averaging 0.096 to 0.452 seconds. Stochastic gradient descent exhibited the highest computational cost, averaging 0.159 to 0.722 seconds, driven by repetitive memory access and backward passes over mini-batches.
+Stochastic gradient descent produced a steady, smooth error decrease across all tasks. Using mini-batch gradient calculations ($B = 32$) and momentum ($\beta \in \{0.8, 0.9\}$) reduced random fluctuations and kept steady progress along consistent downward slopes. While SGD was better at avoiding overfitting on noisy tabular data, its lack of curvature information caused slow final convergence, taking hundreds of epochs to reach error levels reached quickly by SCG.
 
+The leap-frog dynamic optimizer showed a typical step-like error decrease. Treating weights as moving particles in an energy-conserving field, leap-frog speeds up on flat areas through built-up speed. When hitting steep valleys or opposite slopes ($\mathbf{a}_{k+1}^T \mathbf{a}_k \le 0$), the algorithm applies braking or stops ($\mathbf{v} = \mathbf{0}$) to reduce speed and avoid instability. On complex landscapes like Wine Recognition and Breast Cancer, occasional stops caused temporary error jumps before converging to stable solutions. On smooth regression functions, leap-frog produced consistent results across runs.
+
+The runtime measurements in Table \ref{tab:comparison} show the balance between the number of steps and work for each step. Stochastic gradient descent required between 2000 and 7000 gradient calculations for each run due to repeated batch processing. In contrast, the leap-frog optimizer executed exactly 501 gradient calculations for each run---one gradient calculation for each step $\Delta t$, with zero extra calculations. Scaled conjugate gradient used between 408 and 501 function evaluations and 815 to 1000 gradient calculations, using two gradient calculations for each step to compute curvature vectors $\mathbf{s}_k$.
+
+Therefore, leap-frog was always the quickest algorithm across all benchmark problems, averaging 0.052 to 0.185 seconds for each run. Scaled conjugate gradient was the second fastest, averaging 0.061 to 0.293 seconds. Stochastic gradient descent took the longest to run, averaging 0.101 to 0.462 seconds for each run, due to repeated data processing and gradient calculations across mini-batches.
+
+\newpage
 \section{Conclusions}
-This study evaluated three feedforward neural network training algorithms: stochastic gradient descent, scaled conjugate gradient, and the leap-frog dynamic optimizer. Empirical evaluations across three classification problems and three function approximation problems revealed distinct performance characteristics. The scaled conjugate gradient algorithm achieved the highest accuracy and lowest generalization error on non-linear function approximation and continuous manifold classification tasks, converging within fewer iterations than stochastic gradient descent. Stochastic gradient descent demonstrated robust performance on noisy clinical regression and diagnostic datasets, but incurred the highest computational execution time and largest number of gradient evaluations. The leap-frog dynamic optimization method demonstrated the lowest computational complexity per iteration and required the fewest gradient evaluations while achieving competitive accuracy across all benchmarks.
+This study evaluated three feedforward neural network training algorithms: stochastic gradient descent with Polyak momentum, scaled conjugate gradient, and the leap-frog dynamic optimizer. Experiments showed different strengths across three classification and three function approximation problems. Scaled conjugate gradient worked best on smooth functions, where curvature-based methods gave better accuracy and faster training. Stochastic gradient descent showed better stability on noisy clinical tabular datasets, where random gradients helped prevent overfitting. The leap-frog dynamic optimizer was the fastest, using up to 10$\times$ fewer gradient calculations and achieving the lowest runtimes while keeping similar accuracy across all benchmarks.
 
 \begin{thebibliography}{00}
+\setlength{\itemsep}{1.5pt}
+\setlength{\parskip}{0pt}
+
+\bibitem{engelbrecht2007}
+A.~P.~Engelbrecht, \emph{Computational Intelligence: An Introduction}, 2nd~ed. Chichester, UK: John Wiley \& Sons, 2007.
 
 \bibitem{moller1993}
 M.~F.~M\o{}ller, ``A scaled conjugate gradient algorithm for fast supervised learning,'' \emph{Neural Networks}, vol.~6, no.~4, pp.~525--533, 1993.
@@ -236,42 +222,9 @@ J.~A.~Snyman, ``A new and dynamic method for unconstrained minimization,'' \emph
 \bibitem{snyman1983}
 J.~A.~Snyman, ``An improved version of the original leap-frog dynamic method for unconstrained minimization: LFOP1(b),'' \emph{Applied Mathematical Modelling}, vol.~7, no.~3, pp.~216--218, 1983.
 
+\bibitem{wolpert1997}
+D.~H.~Wolpert and W.~G.~Macready, ``No free lunch theorems for optimization,'' \emph{IEEE Transactions on Evolutionary Computation}, vol.~1, no.~1, pp.~67--82, 1997.
+
 \end{thebibliography}
-
-\appendices
-
-\section{Acronyms}
-\begin{itemize}
-    \item \textbf{LFOP1}: Leap-frog optimizer version 1
-    \item \textbf{LFOP1(b)}: Leap-frog optimizer version 1 (modified)
-    \item \textbf{MSE}: Mean squared error
-    \item \textbf{SCG}: Scaled conjugate gradient
-    \item \textbf{SD}: Standard deviation
-    \item \textbf{SGD}: Stochastic gradient descent
-\end{itemize}
-
-\section{Mathematical Symbols}
-\begin{itemize}
-    \item $\mathbf{a}_k$: Acceleration vector at step $k$
-    \item $\alpha_k$: Step size parameter in scaled conjugate gradient
-    \item $\mathbf{b}^{(l)}$: Bias vector of layer $l$
-    \item $\beta$: Momentum coefficient
-    \item $D$: Parameter space dimensionality
-    \item $\delta$: Maximum allowable displacement in leap-frog
-    \item $\delta_k$: Quadratic curvature parameter in scaled conjugate gradient
-    \item $\Delta_k$: Model comparison parameter in scaled conjugate gradient
-    \item $\Delta t$: Discretization time step in leap-frog
-    \item $\eta$: Learning rate parameter
-    \item $E(\mathbf{w})$: Scalar objective error function
-    \item $\mathbf{p}_k$: Conjugate search direction vector at step $k$
-    \item $\mathbf{s}_k$: Estimated Hessian-vector product vector
-    \item $\sigma$: Finite-difference perturbation scalar in scaled conjugate gradient
-    \item $\mathbf{v}_k$: Velocity vector at step $k$
-    \item $\mathbf{w}_k$: Concatenated parameter vector at step $k$
-    \item $\mathbf{W}^{(l)}$: Weight matrix of layer $l$
-    \item $\mathbf{x}$: Input feature vector
-    \item $\mathbf{y}$: Target output vector
-    \item $\hat{\mathbf{y}}$: Model predicted output vector
-\end{itemize}
 
 \end{document}
